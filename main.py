@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine
 import models
-from routers import auth, contacts, bookings
+from routers import auth, contacts, bookings, villas, availability
 
 # Create all tables on startup
 models.Base.metadata.create_all(bind=engine)
@@ -24,6 +24,8 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(contacts.router)
 app.include_router(bookings.router)
+app.include_router(villas.router)
+app.include_router(availability.router)
 
 
 @app.get("/")

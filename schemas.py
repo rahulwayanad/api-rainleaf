@@ -1,7 +1,51 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional
+from pydantic import BaseModel, EmailStr, field_validator
+from typing import Optional, List
 from datetime import datetime
-from models import BookingStatus
+from decimal import Decimal
+from models import BookingStatus, PaymentStatus
+
+
+# ── Villa ─────────────────────────────────────────────────────────────────────
+
+class RoomSpec(BaseModel):
+    name: str                    # e.g. "Bedroom 1"
+    max_guests: int
+    is_ac: bool
+    has_attached_bathroom: bool
+
+class VillaCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+    is_active: bool = True
+    amenities: List[str] = []
+    rooms: List[RoomSpec] = []
+
+class VillaUpdate(VillaCreate):
+    pass
+
+class VillaOut(BaseModel):
+    id: int
+    name: str
+    description: Optional[str]
+    image_url: Optional[str]
+    is_active: bool
+    amenities: List[str]
+    rooms: List[RoomSpec]
+    created_at: datetime
+
+    @field_validator('amenities', mode='before')
+    @classmethod
+    def amenities_default(cls, v):
+        return v or []
+
+    @field_validator('rooms', mode='before')
+    @classmethod
+    def rooms_default(cls, v):
+        return v or []
+
+    class Config:
+        from_attributes = True
 
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
@@ -42,8 +86,13 @@ class ContactOut(BaseModel):
 
 class BookingCreate(BaseModel):
     customer_name: str
-    email: EmailStr
+    email: Optional[EmailStr] = None
     phone: str
+
+    @field_validator('email', mode='before')
+    @classmethod
+    def blank_email_to_none(cls, v):
+        return v if v else None
     check_in: str
     check_out: str
     guests: int = 2
@@ -53,10 +102,21 @@ class BookingCreate(BaseModel):
 class BookingStatusUpdate(BaseModel):
     status: BookingStatus
 
+class BookingPaymentUpdate(BaseModel):
+    payment_status:  PaymentStatus
+    amount_paid:     Decimal = Decimal('0')
+    extra_amount:    Decimal = Decimal('0')
+    discount_amount: Decimal = Decimal('0')
+
+class VillaAvailability(BaseModel):
+    villa_id: int
+    villa_name: str
+    available: bool
+
 class BookingOut(BaseModel):
     id: int
     customer_name: str
-    email: str
+    email: Optional[str]
     phone: str
     check_in: str
     check_out: str
@@ -64,6 +124,10 @@ class BookingOut(BaseModel):
     villa_id: Optional[int]
     special_requests: Optional[str]
     status: BookingStatus
+    payment_status:  PaymentStatus
+    amount_paid:     Decimal
+    extra_amount:    Decimal
+    discount_amount: Decimal
     created_at: datetime
 
     class Config:
