@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, Enum, JSON, Numeric
+from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, Enum, JSON, Numeric, ForeignKey, Date
 from sqlalchemy.sql import func
 from database import Base
 import enum
@@ -74,3 +74,23 @@ class Booking(Base):
     extra_amount    = Column(Numeric(10, 2), default=0, nullable=False)
     discount_amount = Column(Numeric(10, 2), default=0, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class ExpenseType(Base):
+    __tablename__ = "expense_types"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    name       = Column(String(100), unique=True, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class Expense(Base):
+    __tablename__ = "expenses"
+
+    id              = Column(Integer, primary_key=True, index=True)
+    amount          = Column(Numeric(10, 2), nullable=False)
+    expense_type_id = Column(Integer, ForeignKey("expense_types.id"), nullable=False)
+    date            = Column(Date, nullable=False, server_default=func.current_date())
+    paid_by         = Column(String(100), nullable=True)
+    note            = Column(Text, nullable=True)
+    created_at      = Column(DateTime(timezone=True), server_default=func.now())

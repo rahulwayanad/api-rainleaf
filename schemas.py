@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, field_validator
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, date as date_type
 from decimal import Decimal
 from models import BookingStatus, PaymentStatus
 
@@ -128,6 +128,50 @@ class BookingOut(BaseModel):
     amount_paid:     Decimal
     extra_amount:    Decimal
     discount_amount: Decimal
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ── Expense Type ───────────────────────────────────────────────────────────────
+
+class ExpenseTypeCreate(BaseModel):
+    name: str
+
+class ExpenseTypeOut(BaseModel):
+    id: int
+    name: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ── Expense ───────────────────────────────────────────────────────────────────
+
+class ExpenseCreate(BaseModel):
+    amount: Decimal
+    expense_type_id: int
+    date: Optional[date_type] = None
+    paid_by: Optional[str] = None
+    note: Optional[str] = None
+
+class ExpenseUpdate(BaseModel):
+    amount: Optional[Decimal] = None
+    expense_type_id: Optional[int] = None
+    date: Optional[date_type] = None
+    paid_by: Optional[str] = None
+    note: Optional[str] = None
+
+class ExpenseOut(BaseModel):
+    id: int
+    amount: Decimal
+    expense_type_id: int
+    expense_type_name: Optional[str] = None
+    date: date_type
+    paid_by: Optional[str]
+    note: Optional[str]
     created_at: datetime
 
     class Config:
