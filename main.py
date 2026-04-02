@@ -1,11 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from database import engine
-import models
 from routers import auth, contacts, bookings, villas, availability
-
-# Create all tables on startup
-models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Rainleaf Family Retreat API",
